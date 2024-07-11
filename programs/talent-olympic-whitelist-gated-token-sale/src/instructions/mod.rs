@@ -6,3 +6,6 @@ pub use join_whitelist::*;
 
 pub mod close_pool;
 pub use close_pool::*;
+
+pub mod leave_whitelist;
+pub use leave_whitelist::*;

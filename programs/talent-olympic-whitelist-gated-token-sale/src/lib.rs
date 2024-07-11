@@ -31,6 +31,10 @@ pub mod talent_olympic_whitelist_gated_token_sale {
     pub fn join_whitelist(ctx: Context<JoinWhitelist>) -> Result<()> {
         ctx.accounts.handler()
     }
+
+    pub fn leave_whitelist(ctx: Context<LeaveWhitelist>) -> Result<()> {
+        ctx.accounts.handler()
+    }
 }
 
 #[derive(Accounts)]

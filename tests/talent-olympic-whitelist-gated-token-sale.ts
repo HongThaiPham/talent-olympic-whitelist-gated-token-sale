@@ -144,6 +144,32 @@ describe("talent-olympic-whitelist-gated-token-sale", () => {
       .rpc();
 
     assert.ok(true);
+    const poolAccountData = await program.account.pool.fetch(poolAccount);
+    assert.equal(poolAccountData.isInitialized, true);
+    assert.equal(
+      poolAccountData.allocation.toNumber(),
+      poolInfo.allocation.toNumber()
+    );
+    assert.equal(
+      poolAccountData.startTime.toNumber(),
+      poolInfo.start_time.toNumber()
+    );
+    assert.equal(
+      poolAccountData.endTime.toNumber(),
+      poolInfo.end_time.toNumber()
+    );
+    assert.equal(
+      poolAccountData.referenceId.toNumber(),
+      poolInfo.reference_id.toNumber()
+    );
+    assert.equal(poolAccountData.canBuy, false);
+    assert.equal(poolAccountData.mint.toBase58(), poolInfo.mint.toBase58());
+    assert.equal(
+      poolAccountData.author.toBase58(),
+      poolAuthor.publicKey.toBase58()
+    );
+    assert.equal(poolAccountData.candidateCount.toNumber(), 0);
+
     console.log("Init pool tx:", tx);
   });
 
@@ -164,25 +190,9 @@ describe("talent-olympic-whitelist-gated-token-sale", () => {
         .rpc();
 
       assert.ok(false);
-    } catch (err) {
-      // assert.isTrue(err instanceof AnchorError);
-      // console.log(err);
+    } catch (error) {
+      assert.isNotNull(error);
     }
-  });
-
-  it("should user allow join whitelist successfully", async () => {
-    const tx = await program.methods
-      .joinWhitelist()
-      .accounts({
-        signer: user1.publicKey,
-        mint: poolInfo.mint,
-      })
-      .signers([user1])
-      .rpc();
-
-    assert.ok(true);
-
-    console.log("Join whitelist tx:", tx);
   });
 
   it("Should pool author allow close pool if have no candidate registered and status is cannot buy", async () => {
@@ -220,6 +230,54 @@ describe("talent-olympic-whitelist-gated-token-sale", () => {
 
     assert.ok(true);
 
+    try {
+      const [poolAccountForClose] =
+        anchor.web3.PublicKey.findProgramAddressSync(
+          [Buffer.from("pool"), poolInfoForClose.mint.toBuffer()],
+          program.programId
+        );
+      const poolAccountData = await program.account.pool.fetch(
+        poolAccountForClose
+      );
+
+      assert.equal(poolAccountData.isInitialized, false);
+      assert.ok(false);
+    } catch (error) {
+      assert.isNotNull(error);
+    }
+
     console.log("Close pool tx:", tx);
+  });
+
+  it("should user allow join whitelist successfully", async () => {
+    const tx = await program.methods
+      .joinWhitelist()
+      .accounts({
+        signer: user1.publicKey,
+        mint: poolInfo.mint,
+      })
+      .signers([user1])
+      .rpc();
+
+    assert.ok(true);
+    const poolAccountData = await program.account.pool.fetch(poolAccount);
+    assert.equal(poolAccountData.candidateCount.toNumber(), 1);
+    console.log("Join whitelist tx:", tx);
+  });
+
+  it("should user allow leave whitelist successfully", async () => {
+    const tx = await program.methods
+      .leaveWhitelist()
+      .accounts({
+        signer: user1.publicKey,
+        mint: poolInfo.mint,
+      })
+      .signers([user1])
+      .rpc();
+
+    assert.ok(true);
+    const poolAccountData = await program.account.pool.fetch(poolAccount);
+    assert.equal(poolAccountData.candidateCount.toNumber(), 0);
+    console.log("Leave whitelist tx:", tx);
   });
 });

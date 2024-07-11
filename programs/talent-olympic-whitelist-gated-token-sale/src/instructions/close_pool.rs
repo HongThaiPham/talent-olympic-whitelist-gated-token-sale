@@ -20,6 +20,7 @@ pub struct ClosePool<'info> {
       close = signer
     )]
     pub pool: Account<'info, Pool>,
+    #[account(address = pool.mint)]
     pub mint: Box<InterfaceAccount<'info, Mint>>,
 }
 
