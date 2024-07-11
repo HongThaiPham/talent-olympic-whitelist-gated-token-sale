@@ -13,3 +13,6 @@ pub const STRING_PREFIX_SIZE: usize = 4;
 
 #[constant]
 pub const POOL_SEED: &[u8] = b"pool";
+
+#[constant]
+pub const SLOT_SEED: &[u8] = b"slot";

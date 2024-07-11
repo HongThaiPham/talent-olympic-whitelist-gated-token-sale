@@ -42,8 +42,13 @@ describe("talent-olympic-whitelist-gated-token-sale", () => {
     mint: tokenKeypair.publicKey,
   };
 
-  let [poolAccount] = anchor.web3.PublicKey.findProgramAddressSync(
+  const [poolAccount] = anchor.web3.PublicKey.findProgramAddressSync(
     [Buffer.from("pool"), poolInfo.mint.toBuffer()],
+    program.programId
+  );
+
+  const [slotAccountUser1] = anchor.web3.PublicKey.findProgramAddressSync(
+    [Buffer.from("slot"), poolAccount.toBuffer(), user1.publicKey.toBuffer()],
     program.programId
   );
 
@@ -106,7 +111,7 @@ describe("talent-olympic-whitelist-gated-token-sale", () => {
       )
       .accounts({
         signer: poolAuthor.publicKey,
-        mint: tokenKeypair.publicKey,
+        mint: poolInfo.mint,
       })
       .signers([poolAuthor])
       .rpc();
@@ -136,5 +141,20 @@ describe("talent-olympic-whitelist-gated-token-sale", () => {
       // assert.isTrue(err instanceof AnchorError);
       // console.log(err);
     }
+  });
+
+  it("should user allow join whitelist successfully", async () => {
+    const tx = await program.methods
+      .joinWhitelist()
+      .accountsPartial({
+        signer: user1.publicKey,
+        mint: poolInfo.mint,
+      })
+      .signers([user1])
+      .rpc();
+
+    assert.ok(true);
+
+    console.log("Join whitelist tx:", tx);
   });
 });

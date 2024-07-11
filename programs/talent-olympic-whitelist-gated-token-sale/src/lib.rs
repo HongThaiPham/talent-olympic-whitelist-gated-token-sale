@@ -21,7 +21,11 @@ pub mod talent_olympic_whitelist_gated_token_sale {
         reference_id: Option<u64>,
     ) -> Result<()> {
         ctx.accounts
-            .init(allocation, start_time, end_time, reference_id)
+            .handler(allocation, start_time, end_time, reference_id)
+    }
+
+    pub fn join_whitelist(ctx: Context<JoinWhitelist>) -> Result<()> {
+        ctx.accounts.handler()
     }
 }
 

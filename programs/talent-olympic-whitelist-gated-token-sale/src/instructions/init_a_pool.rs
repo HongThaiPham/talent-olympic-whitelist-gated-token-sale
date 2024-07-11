@@ -23,7 +23,7 @@ pub struct InitializePool<'info> {
 }
 
 impl<'info> InitializePool<'info> {
-    pub fn init(
+    pub fn handler(
         &mut self,
         allocation: u64,
         start_time: i64,
