@@ -24,6 +24,10 @@ pub mod talent_olympic_whitelist_gated_token_sale {
             .handler(allocation, start_time, end_time, reference_id)
     }
 
+    pub fn close_pool(ctx: Context<ClosePool>) -> Result<()> {
+        ctx.accounts.handler()
+    }
+
     pub fn join_whitelist(ctx: Context<JoinWhitelist>) -> Result<()> {
         ctx.accounts.handler()
     }

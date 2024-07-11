@@ -5,4 +5,7 @@ pub enum MyError {
     Unauthorized,
     #[msg("Already initialized")]
     AlreadyInitialized,
+    #[msg("Cannot close pool")]
+    CannotClosePool,
+    Overflow,
 }

@@ -33,6 +33,7 @@ describe("talent-olympic-whitelist-gated-token-sale", () => {
   });
 
   const tokenKeypair = anchor.web3.Keypair.generate();
+  const tokenKeypairForClose = anchor.web3.Keypair.generate();
 
   const poolInfo = {
     allocation: new anchor.BN(1_000_000 * 10 ** TOKEN_DECIMALS),
@@ -99,6 +100,32 @@ describe("talent-olympic-whitelist-gated-token-sale", () => {
         BigInt(TOKEN_INIT_AMOUNT)
       );
     }
+    {
+      const mintForClose = await createMint(
+        provider.connection,
+        poolAuthor,
+        poolAuthor.publicKey,
+        null,
+        TOKEN_DECIMALS,
+        tokenKeypairForClose
+      );
+
+      await mintTo(
+        provider.connection,
+        poolAuthor,
+        mintForClose,
+        (
+          await getOrCreateAssociatedTokenAccount(
+            provider.connection,
+            poolAuthor,
+            mintForClose,
+            poolAuthor.publicKey
+          )
+        ).address,
+        poolAuthor,
+        BigInt(TOKEN_INIT_AMOUNT)
+      );
+    }
   });
 
   it("should initialize the pool successfully", async () => {
@@ -146,7 +173,7 @@ describe("talent-olympic-whitelist-gated-token-sale", () => {
   it("should user allow join whitelist successfully", async () => {
     const tx = await program.methods
       .joinWhitelist()
-      .accountsPartial({
+      .accounts({
         signer: user1.publicKey,
         mint: poolInfo.mint,
       })
@@ -156,5 +183,43 @@ describe("talent-olympic-whitelist-gated-token-sale", () => {
     assert.ok(true);
 
     console.log("Join whitelist tx:", tx);
+  });
+
+  it("Should pool author allow close pool if have no candidate registered and status is cannot buy", async () => {
+    const poolInfoForClose = {
+      allocation: new anchor.BN(1_000_000 * 10 ** TOKEN_DECIMALS),
+      start_time: new anchor.BN(dayjs().unix()),
+      end_time: new anchor.BN(dayjs().add(1, "day").unix()),
+      reference_id: new anchor.BN(1),
+      mint: tokenKeypairForClose.publicKey,
+    };
+    let tx = await program.methods
+      .initAPool(
+        poolInfoForClose.allocation,
+        poolInfoForClose.start_time,
+        poolInfoForClose.end_time,
+        poolInfoForClose.reference_id
+      )
+      .accounts({
+        signer: poolAuthor.publicKey,
+        mint: poolInfoForClose.mint,
+      })
+      .signers([poolAuthor])
+      .rpc();
+
+    assert.ok(true);
+
+    tx = await program.methods
+      .closePool()
+      .accounts({
+        signer: poolAuthor.publicKey,
+        mint: poolInfoForClose.mint,
+      })
+      .signers([poolAuthor])
+      .rpc();
+
+    assert.ok(true);
+
+    console.log("Close pool tx:", tx);
   });
 });

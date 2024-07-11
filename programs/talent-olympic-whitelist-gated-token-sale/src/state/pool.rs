@@ -13,6 +13,7 @@ pub struct Pool {
     pub end_time: i64,             // The end date of the pool
     pub can_buy: bool,             // Whether the pool is open for buying or not
     pub reference_id: Option<u64>, // The reference id of the pool map to off-chain db for track
+    pub candidate_count: u64,      // The number of candidates in the pool
 }
 
 #[event]
@@ -23,6 +24,13 @@ pub struct NewPoolInitiated {
     pub start_time: i64,
     pub end_time: i64,
     pub reference_id: Option<u64>,
+}
+
+#[event]
+pub struct PoolClosed {
+    pub pool: Pubkey,
+    pub author: Pubkey,
+    pub mint: Pubkey,
 }
 
 impl Pool {
@@ -45,6 +53,7 @@ impl Pool {
         self.end_time = end_time;
         self.can_buy = false;
         self.reference_id = reference_id;
+        self.candidate_count = 0;
         Ok(())
     }
 }

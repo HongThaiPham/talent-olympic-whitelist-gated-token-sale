@@ -10,6 +10,12 @@ pub struct Slot {
     pub limit_amount: u64,  // Amount of tokens the user can buy
 }
 
+#[event]
+pub struct SlotInitiated {
+    pub pool: Pubkey,
+    pub author: Pubkey,
+}
+
 impl Slot {
     pub fn init(&mut self, pool: Pubkey) -> Result<()> {
         require!(self.pool == Pubkey::default(), MyError::AlreadyInitialized);
