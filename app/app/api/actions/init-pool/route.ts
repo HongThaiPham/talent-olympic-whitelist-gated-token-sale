@@ -1,9 +1,10 @@
-import { web3 } from "@coral-xyz/anchor";
+import getProgram from "@/lib/program";
+import { web3, BN } from "@coral-xyz/anchor";
 
-import { ActionGetResponse } from "@solana/actions";
+import { ActionGetResponse, ActionPostResponse } from "@solana/actions";
 const headers = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Methods": "GET,POST,PUT,OPTIONS",
   "Access-Control-Allow-Headers":
     "Content-Type, Authorization, Content-Encoding, Accept-Encoding",
 };
@@ -41,13 +42,28 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  return Response.json(
-    { message: "POST request" },
-    {
-      status: 200,
-      headers,
-    }
-  );
+  const body = await req.json();
+  const { account } = body;
+  const program = getProgram();
+
+  // const poolInfo = {
+  //   allocation: new BN(1_000_000 * 10 ** TOKEN_DECIMALS),
+  //   start_time: new BN(dayjs().subtract(5, "s").unix()),
+  //   end_time: new BN(dayjs().add(1, "day").unix()),
+  //   reference_id: new BN(1),
+  //   mint: tokenKeypair.publicKey,
+  //   price: new anchor.BN(TOKEN_PRICE),
+  // };
+
+  //   const transaction = program.methods.initAPool()
+
+  const response: ActionPostResponse = {
+    transaction: Buffer.from(account, "base64").toString(),
+  };
+  return Response.json(response, {
+    status: 200,
+    headers,
+  });
 }
 
 export async function OPTIONS(req: Request) {
