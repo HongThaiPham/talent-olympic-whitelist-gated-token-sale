@@ -1,7 +1,9 @@
 import getProgram from "@/lib/program";
 import { web3, BN } from "@coral-xyz/anchor";
-
+import dayjs from "dayjs";
 import { ActionGetResponse, ActionPostResponse } from "@solana/actions";
+import { getMint } from "@solana/spl-token";
+
 const headers = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET,POST,PUT,OPTIONS",
@@ -19,7 +21,7 @@ export async function GET(req: Request) {
       actions: [
         {
           label: "Init Pool",
-          href: `${process.env.NEXT_PUBLIC_DOMAIN}/actions/init-pool`,
+          href: `${process.env.NEXT_PUBLIC_DOMAIN}/actions/init-pool?mint={mint}&allocation={allocation}&price={price}&period={period}`,
           parameters: [
             {
               name: "mint",
@@ -28,6 +30,14 @@ export async function GET(req: Request) {
             {
               name: "allocation",
               label: "Allocation",
+            },
+            {
+              name: "price",
+              label: "How many SOL per token?",
+            },
+            {
+              name: "period",
+              label: "How many days for registration?",
             },
           ],
         },
@@ -40,30 +50,88 @@ export async function GET(req: Request) {
     headers,
   });
 }
-
+// api/actions/init-pool?mint={mint}&allocation={allocation}&price={price}&period={period}
 export async function POST(req: Request) {
   const body = await req.json();
   const { account } = body;
-  const program = getProgram();
+  const { searchParams } = new URL(req.url);
+  const { program, connection } = getProgram();
+  const mint = searchParams.get("mint");
+  const allocation = searchParams.get("allocation");
+  const price = searchParams.get("price");
+  const period = searchParams.get("period") || 10;
+  const authority = new web3.PublicKey(account);
 
-  // const poolInfo = {
-  //   allocation: new BN(1_000_000 * 10 ** TOKEN_DECIMALS),
-  //   start_time: new BN(dayjs().subtract(5, "s").unix()),
-  //   end_time: new BN(dayjs().add(1, "day").unix()),
-  //   reference_id: new BN(1),
-  //   mint: tokenKeypair.publicKey,
-  //   price: new anchor.BN(TOKEN_PRICE),
-  // };
+  if (!mint || !allocation || !price) {
+    return Response.json(
+      { message: "Missing mint or allocation" },
+      {
+        status: 400,
+        headers,
+      }
+    );
+  }
 
-  //   const transaction = program.methods.initAPool()
+  const mintPublicKey = new web3.PublicKey(mint);
+  const [poolAccount] = web3.PublicKey.findProgramAddressSync(
+    [Buffer.from("pool"), mintPublicKey.toBuffer()],
+    program.programId
+  );
 
-  const response: ActionPostResponse = {
-    transaction: Buffer.from(account, "base64").toString(),
-  };
-  return Response.json(response, {
-    status: 200,
-    headers,
-  });
+  try {
+    const poolAccountData = await program.account.pool.fetch(poolAccount);
+    if (poolAccountData.isInitialized) {
+      return Response.json(
+        { message: "Pool already initialized" },
+        {
+          status: 400,
+          headers,
+        }
+      );
+    }
+  } catch (error) {
+    const start_time = new BN(dayjs().subtract(5, "s").unix());
+    const end_time = new BN(dayjs().add(Number(period), "day").unix());
+
+    const mintInfo = await getMint(connection, mintPublicKey);
+    const tokenAllocation = new BN(allocation).mul(
+      new BN(10).pow(new BN(mintInfo.decimals))
+    );
+    const reference_id = new BN(1);
+
+    const ix = await program.methods
+      .initAPool(
+        tokenAllocation,
+        new BN(price),
+        start_time,
+        end_time,
+        reference_id
+      )
+      .accounts({
+        signer: authority,
+        mint: mintPublicKey,
+      })
+      .instruction();
+
+    const blockhash = await connection
+      .getLatestBlockhash({ commitment: "max" })
+      .then((res) => res.blockhash);
+    const messageV0 = new web3.TransactionMessage({
+      payerKey: authority,
+      recentBlockhash: blockhash,
+      instructions: [ix],
+    }).compileToV0Message();
+    const transaction = new web3.VersionedTransaction(messageV0);
+
+    const response: ActionPostResponse = {
+      transaction: Buffer.from(transaction.serialize()).toString("base64"),
+      message: `Pool initialized successfully. Pool account: ${poolAccount.toBase58()}, mint: ${mint}, allocation: ${allocation}, price: ${price}, period: ${period} days`,
+    };
+    return Response.json(response, {
+      status: 200,
+      headers,
+    });
+  }
 }
 
 export async function OPTIONS(req: Request) {

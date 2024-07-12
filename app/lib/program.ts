@@ -11,5 +11,5 @@ export default function getProgram() {
       connection,
     }
   );
-  return program;
+  return { program, connection };
 }
