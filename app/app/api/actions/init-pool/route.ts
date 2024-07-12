@@ -20,7 +20,7 @@ export async function GET(req: Request) {
     links: {
       actions: [
         {
-          label: "Init Pool",
+          label: "Init a Whitelist-gated Token Sale Pool",
           href: `${process.env.NEXT_PUBLIC_DOMAIN}/api/actions/init-pool?mint={mint}&allocation={allocation}&price={price}&period={period}`,
           parameters: [
             {
@@ -33,7 +33,7 @@ export async function GET(req: Request) {
             },
             {
               name: "price",
-              label: "How many SOL per token?",
+              label: "How many lamports per token? ",
             },
             {
               name: "period",
