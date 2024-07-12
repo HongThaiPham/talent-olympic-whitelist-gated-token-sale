@@ -25,4 +25,12 @@ impl Slot {
         self.limit_amount = 0;
         Ok(())
     }
+
+    pub fn set_slot(&mut self, pool: Pubkey, in_whitelist: bool, limit_amount: u64) -> Result<()> {
+        require!(self.pool == pool, MyError::Unauthorized);
+
+        self.in_whitelist = in_whitelist;
+        self.limit_amount = limit_amount;
+        Ok(())
+    }
 }

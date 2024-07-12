@@ -12,3 +12,6 @@ pub use leave_whitelist::*;
 
 pub mod approve_buy;
 pub use approve_buy::*;
+
+pub mod set_slot;
+pub use set_slot::*;

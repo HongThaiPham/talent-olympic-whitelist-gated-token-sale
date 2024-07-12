@@ -33,6 +33,15 @@ pub mod talent_olympic_whitelist_gated_token_sale {
         ctx.accounts.handler()
     }
 
+    pub fn set_slot(
+        ctx: Context<SetSlot>,
+        wallet: Pubkey,
+        in_whitelist: bool,
+        limit_amount: u64,
+    ) -> Result<()> {
+        ctx.accounts.handler(wallet, in_whitelist, limit_amount)
+    }
+
     pub fn join_whitelist(ctx: Context<JoinWhitelist>) -> Result<()> {
         ctx.accounts.handler()
     }

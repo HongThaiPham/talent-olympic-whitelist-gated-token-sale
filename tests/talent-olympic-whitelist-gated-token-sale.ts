@@ -1,5 +1,5 @@
 import * as anchor from "@coral-xyz/anchor";
-import { AnchorError, Program } from "@coral-xyz/anchor";
+import { Program } from "@coral-xyz/anchor";
 import { TalentOlympicWhitelistGatedTokenSale } from "../target/types/talent_olympic_whitelist_gated_token_sale";
 import dayjs from "dayjs";
 import {
@@ -7,7 +7,7 @@ import {
   getOrCreateAssociatedTokenAccount,
   mintTo,
 } from "@solana/spl-token";
-import { assert, expect } from "chai";
+import { assert } from "chai";
 
 describe("talent-olympic-whitelist-gated-token-sale", () => {
   // Configure the client to use the local cluster.
@@ -20,6 +20,7 @@ describe("talent-olympic-whitelist-gated-token-sale", () => {
   const TOKEN_DECIMALS = 9;
   const TOKEN_INIT_AMOUNT = 1_000_000 * 10 ** TOKEN_DECIMALS;
   const TOKEN_PRICE = 1_000_000; // 0.001 SOL per token
+  const LIMIT_AMOUNT = 1_000 * 10 ** TOKEN_DECIMALS;
 
   const [poolAuthor, user1, user2] = [
     anchor.web3.Keypair.generate(),
@@ -181,6 +182,7 @@ describe("talent-olympic-whitelist-gated-token-sale", () => {
       await program.methods
         .initAPool(
           poolInfo.allocation,
+          poolInfo.price,
           poolInfo.start_time,
           poolInfo.end_time,
           poolInfo.reference_id
@@ -271,18 +273,27 @@ describe("talent-olympic-whitelist-gated-token-sale", () => {
   });
 
   it("should user allow leave whitelist successfully", async () => {
-    const tx = await program.methods
-      .leaveWhitelist()
+    let tx = await program.methods
+      .joinWhitelist()
       .accounts({
-        signer: user1.publicKey,
+        signer: user2.publicKey,
         mint: poolInfo.mint,
       })
-      .signers([user1])
+      .signers([user2])
+      .rpc();
+
+    tx = await program.methods
+      .leaveWhitelist()
+      .accounts({
+        signer: user2.publicKey,
+        mint: poolInfo.mint,
+      })
+      .signers([user2])
       .rpc();
 
     assert.ok(true);
     const poolAccountData = await program.account.pool.fetch(poolAccount);
-    assert.equal(poolAccountData.candidateCount.toNumber(), 0);
+    assert.equal(poolAccountData.candidateCount.toNumber(), 1);
     console.log("Leave whitelist tx:", tx);
   });
 
@@ -297,5 +308,24 @@ describe("talent-olympic-whitelist-gated-token-sale", () => {
     const poolAccountData = await program.account.pool.fetch(poolAccount);
     assert.equal(poolAccountData.canBuy, true);
     console.log("Approve buy tx:", tx);
+  });
+
+  it("Should pool author allow approve user in whitelist", async () => {
+    const tx = await program.methods
+      .setSlot(user1.publicKey, true, new anchor.BN(LIMIT_AMOUNT))
+      .accountsPartial({
+        signer: poolAuthor.publicKey,
+        mint: poolInfo.mint,
+        pool: poolAccount,
+        slot: slotAccountUser1,
+      })
+      .signers([poolAuthor])
+      .rpc();
+
+    assert.ok(true);
+    const slotAccountData = await program.account.slot.fetch(slotAccountUser1);
+    assert.equal(slotAccountData.inWhitelist, true);
+    assert.equal(slotAccountData.limitAmount.toNumber(), LIMIT_AMOUNT);
+    console.log("Approve user in whitelist tx:", tx);
   });
 });
