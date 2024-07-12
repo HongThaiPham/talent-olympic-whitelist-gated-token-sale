@@ -285,4 +285,17 @@ describe("talent-olympic-whitelist-gated-token-sale", () => {
     assert.equal(poolAccountData.candidateCount.toNumber(), 0);
     console.log("Leave whitelist tx:", tx);
   });
+
+  it("Should pool author allow approve pool can buy successfully", async () => {
+    const tx = await program.methods
+      .approveBuy()
+      .accounts({ signer: poolAuthor.publicKey, mint: poolInfo.mint })
+      .signers([poolAuthor])
+      .rpc();
+
+    assert.ok(true);
+    const poolAccountData = await program.account.pool.fetch(poolAccount);
+    assert.equal(poolAccountData.canBuy, true);
+    console.log("Approve buy tx:", tx);
+  });
 });

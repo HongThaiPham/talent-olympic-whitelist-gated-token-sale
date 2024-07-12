@@ -29,6 +29,10 @@ pub mod talent_olympic_whitelist_gated_token_sale {
         ctx.accounts.handler()
     }
 
+    pub fn approve_buy(ctx: Context<ApproveBuy>) -> Result<()> {
+        ctx.accounts.handler()
+    }
+
     pub fn join_whitelist(ctx: Context<JoinWhitelist>) -> Result<()> {
         ctx.accounts.handler()
     }

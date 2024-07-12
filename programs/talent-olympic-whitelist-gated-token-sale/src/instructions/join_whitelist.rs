@@ -3,7 +3,6 @@ use anchor_spl::token_interface::Mint;
 
 use crate::{
     constants::{DISCRIMINATOR_SIZE, POOL_SEED, SLOT_SEED},
-    errors::MyError,
     state::{Pool, Slot},
 };
 
@@ -33,11 +32,7 @@ pub struct JoinWhitelist<'info> {
 impl<'info> JoinWhitelist<'info> {
     pub fn handler(&mut self) -> Result<()> {
         self.slot.init(self.pool.key())?;
-        self.pool.candidate_count = self
-            .pool
-            .candidate_count
-            .checked_add(1)
-            .ok_or(MyError::Overflow)?;
+        self.pool.has_join_whitelist()?;
         Ok(())
     }
 }

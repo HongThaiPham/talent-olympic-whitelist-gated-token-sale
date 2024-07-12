@@ -64,4 +64,18 @@ impl Pool {
         self.candidate_count = 0;
         Ok(())
     }
+
+    pub fn has_join_whitelist(&mut self) -> Result<()> {
+        self.candidate_count = self
+            .candidate_count
+            .checked_add(1)
+            .ok_or(MyError::Overflow)?;
+        Ok(())
+    }
+
+    pub fn approve_buy(&mut self, user: Pubkey) -> Result<()> {
+        require!(self.author == user, MyError::Unauthorized);
+        self.can_buy = true;
+        Ok(())
+    }
 }

@@ -10,5 +10,5 @@ pub use close_pool::*;
 pub mod leave_whitelist;
 pub use leave_whitelist::*;
 
-pub mod active_buy;
-pub use active_buy::*;
+pub mod approve_buy;
+pub use approve_buy::*;
