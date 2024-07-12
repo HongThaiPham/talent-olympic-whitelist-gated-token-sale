@@ -16,7 +16,7 @@ export async function GET(req: Request) {
     title: "Init a new pool",
     label: "Init Pool",
     description: "This action initializes a new pool.",
-    icon: "https://i.ibb.co/xLnRRzF/bg.png",
+    icon: "https://ucarecdn.com/59f7bf50-bbe0-43c7-a282-badebeea3a6b/-/preview/880x880/-/quality/smart/-/format/auto/",
     links: {
       actions: [
         {
