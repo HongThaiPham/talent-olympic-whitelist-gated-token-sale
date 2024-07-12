@@ -33,8 +33,7 @@ pub struct BuyToken<'info> {
     #[account(
       mut,
       seeds = [SLOT_SEED, pool.key().as_ref(), signer.key().as_ref()],
-      bump,
-      close = signer
+      bump
     )]
     pub slot: Account<'info, Slot>,
     #[account(address = pool.mint)]
@@ -64,6 +63,10 @@ impl<'info> BuyToken<'info> {
         self.transfer_sol_to_traesury(amount)?;
         // for simple case, we can just transfer the token from pool to user immediately after the user buys the token
         self.transfer_token_from_pool_to_user(amount, bumps.pool)?;
+
+        if self.slot.bought_amount == self.slot.limit_amount {
+            self.slot.close(self.signer.to_account_info())?;
+        }
         Ok(())
     }
 

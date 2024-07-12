@@ -75,19 +75,19 @@ describe("talent-olympic-whitelist-gated-token-sale", () => {
     {
       const tx = await provider.connection.requestAirdrop(
         poolAuthor.publicKey,
-        anchor.web3.LAMPORTS_PER_SOL
+        5 * anchor.web3.LAMPORTS_PER_SOL
       );
       await provider.connection.confirmTransaction(tx);
 
       const tx2 = await provider.connection.requestAirdrop(
         user1.publicKey,
-        anchor.web3.LAMPORTS_PER_SOL
+        5 * anchor.web3.LAMPORTS_PER_SOL
       );
       await provider.connection.confirmTransaction(tx2);
 
       const tx3 = await provider.connection.requestAirdrop(
         user2.publicKey,
-        anchor.web3.LAMPORTS_PER_SOL
+        5 * anchor.web3.LAMPORTS_PER_SOL
       );
       await provider.connection.confirmTransaction(tx3);
     }
@@ -409,8 +409,70 @@ describe("talent-olympic-whitelist-gated-token-sale", () => {
         user1TokenAccount.address
       );
     assert.equal(user1TokenAccountBalance.value.amount, amount.toString());
+    const slotAccountUser1Data = await program.account.slot.fetch(
+      slotAccountUser1
+    );
+    assert.equal(
+      slotAccountUser1Data.boughtAmount.toNumber(),
+      amount.toNumber()
+    );
 
     console.log("Buy token tx:", tx);
+  });
+
+  it("Should slot account close when user reached limit amount", async () => {
+    const user1TokenAccount = await getOrCreateAssociatedTokenAccount(
+      provider.connection,
+      user1,
+      poolInfo.mint,
+      user1.publicKey
+    );
+    const amount = new anchor.BN(900 * 10 ** TOKEN_DECIMALS);
+    const tx = await program.methods
+      .buyToken(amount)
+      .accountsPartial({
+        signer: user1.publicKey,
+        mint: poolInfo.mint,
+        pool: poolAccount,
+        poolTreasury: poolTreasuryAccount,
+        slot: slotAccountUser1,
+        signerTokenAccount: user1TokenAccount.address,
+        poolTokenAccount: poolTokenAccount.address,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .signers([user1])
+      .rpc();
+
+    assert.ok(true);
+    const poolTokenAccountBalance =
+      await program.provider.connection.getTokenAccountBalance(
+        poolTokenAccount.address
+      );
+    assert.equal(
+      poolTokenAccountBalance.value.amount,
+      poolInfo.allocation.sub(new anchor.BN(LIMIT_AMOUNT)).toString()
+    );
+    const user1TokenAccountBalance =
+      await program.provider.connection.getTokenAccountBalance(
+        user1TokenAccount.address
+      );
+    assert.equal(
+      user1TokenAccountBalance.value.amount,
+      LIMIT_AMOUNT.toString()
+    );
+
+    try {
+      const slotAccountUser1Data = await program.account.slot.fetch(
+        slotAccountUser1
+      );
+      assert.ok(false);
+    } catch (error) {
+      assert.isNotNull(error);
+    }
+
+    console.log("Buy remaining token tx:", tx);
   });
 
   it("Should user not in whitelist buy token fail", async () => {
@@ -434,6 +496,49 @@ describe("talent-olympic-whitelist-gated-token-sale", () => {
           poolTokenAccount: poolTokenAccount.address,
           tokenProgram: TOKEN_PROGRAM_ID,
           associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+          systemProgram: anchor.web3.SystemProgram.programId,
+        })
+        .signers([user2])
+        .rpc();
+
+      assert.ok(false);
+    } catch (error) {
+      assert.isNotNull(error);
+    }
+  });
+
+  it("Should pool author allow withdraw SOL from pool treasury", async () => {
+    const tx = await program.methods
+      .withdrawTreasury()
+      .accountsPartial({
+        signer: poolAuthor.publicKey,
+        pool: poolAccount,
+        mint: poolInfo.mint,
+        poolTreasury: poolTreasuryAccount,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .signers([poolAuthor])
+      .rpc();
+
+    assert.ok(true);
+
+    const poolTreasuryAccountBalance =
+      await program.provider.connection.getBalance(poolTreasuryAccount);
+
+    assert.equal(poolTreasuryAccountBalance, 0);
+
+    console.log("Withdraw treasury tx:", tx);
+  });
+
+  it("Should user not allow withdraw SOL from pool treasury", async () => {
+    try {
+      const tx = await program.methods
+        .withdrawTreasury()
+        .accountsPartial({
+          signer: user2.publicKey,
+          pool: poolAccount,
+          mint: poolInfo.mint,
+          poolTreasury: poolTreasuryAccount,
           systemProgram: anchor.web3.SystemProgram.programId,
         })
         .signers([user2])

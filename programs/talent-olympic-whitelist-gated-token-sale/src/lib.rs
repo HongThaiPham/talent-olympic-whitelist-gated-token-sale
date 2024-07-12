@@ -53,6 +53,10 @@ pub mod talent_olympic_whitelist_gated_token_sale {
     pub fn buy_token(ctx: Context<BuyToken>, amount: u64) -> Result<()> {
         ctx.accounts.handler(amount, ctx.bumps)
     }
+
+    pub fn withdraw_treasury(ctx: Context<WithdrawTreasury>) -> Result<()> {
+        ctx.accounts.handler(ctx.bumps)
+    }
 }
 
 #[derive(Accounts)]

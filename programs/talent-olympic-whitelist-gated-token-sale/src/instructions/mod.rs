@@ -18,3 +18,6 @@ pub use set_slot::*;
 
 pub mod buy_token;
 pub use buy_token::*;
+
+pub mod withdraw_treasury;
+pub use withdraw_treasury::*;
