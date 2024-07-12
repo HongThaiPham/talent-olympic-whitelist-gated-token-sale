@@ -28,5 +28,28 @@ export async function GET(req: Request) {
     },
   };
 
-  return Response.json(response);
+  return Response.json(response, {
+    status: 200,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    },
+  });
+}
+
+export async function POST(req: Request) {
+  return Response.json({ message: "POST request" });
+}
+
+export async function OPTIONS(req: Request) {
+  return Response.json(
+    { message: "OPTIONS request" },
+    {
+      status: 200,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      },
+    }
+  );
 }
