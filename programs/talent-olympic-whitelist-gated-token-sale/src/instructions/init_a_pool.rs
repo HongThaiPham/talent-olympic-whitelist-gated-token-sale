@@ -26,6 +26,7 @@ impl<'info> InitializePool<'info> {
     pub fn handler(
         &mut self,
         allocation: u64,
+        price: u64,
         start_time: i64,
         end_time: i64,
         reference_id: Option<u64>,
@@ -34,6 +35,7 @@ impl<'info> InitializePool<'info> {
             self.signer.key(),
             self.mint.key(),
             allocation,
+            price,
             start_time,
             end_time,
             reference_id,
@@ -42,6 +44,7 @@ impl<'info> InitializePool<'info> {
             author: self.signer.key(),
             mint: self.mint.key(),
             allocation,
+            price: price,
             start_time,
             end_time,
             reference_id,

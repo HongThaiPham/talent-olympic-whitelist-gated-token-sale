@@ -16,12 +16,13 @@ pub mod talent_olympic_whitelist_gated_token_sale {
     pub fn init_a_pool(
         ctx: Context<InitializePool>,
         allocation: u64,
+        price: u64,
         start_time: i64,
         end_time: i64,
         reference_id: Option<u64>,
     ) -> Result<()> {
         ctx.accounts
-            .handler(allocation, start_time, end_time, reference_id)
+            .handler(allocation, price, start_time, end_time, reference_id)
     }
 
     pub fn close_pool(ctx: Context<ClosePool>) -> Result<()> {

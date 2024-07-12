@@ -28,8 +28,10 @@ impl<'info> ClosePool<'info> {
     pub fn handler(&mut self) -> Result<()> {
         emit!(PoolClosed {
             pool: self.pool.key(),
-            author: self.signer.key(),
-            mint: self.mint.key(),
+            author: self.pool.author,
+            mint: self.pool.mint,
+            allocation: self.pool.allocation,
+            price: self.pool.price,
         });
         Ok(())
     }

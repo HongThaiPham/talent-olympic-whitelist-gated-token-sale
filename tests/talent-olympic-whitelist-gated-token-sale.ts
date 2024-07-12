@@ -19,6 +19,7 @@ describe("talent-olympic-whitelist-gated-token-sale", () => {
     .TalentOlympicWhitelistGatedTokenSale as Program<TalentOlympicWhitelistGatedTokenSale>;
   const TOKEN_DECIMALS = 9;
   const TOKEN_INIT_AMOUNT = 1_000_000 * 10 ** TOKEN_DECIMALS;
+  const TOKEN_PRICE = 1_000_000; // 0.001 SOL per token
 
   const [poolAuthor, user1, user2] = [
     anchor.web3.Keypair.generate(),
@@ -41,6 +42,7 @@ describe("talent-olympic-whitelist-gated-token-sale", () => {
     end_time: new anchor.BN(dayjs().add(1, "day").unix()),
     reference_id: new anchor.BN(1),
     mint: tokenKeypair.publicKey,
+    price: new anchor.BN(TOKEN_PRICE),
   };
 
   const [poolAccount] = anchor.web3.PublicKey.findProgramAddressSync(
@@ -132,6 +134,7 @@ describe("talent-olympic-whitelist-gated-token-sale", () => {
     const tx = await program.methods
       .initAPool(
         poolInfo.allocation,
+        poolInfo.price,
         poolInfo.start_time,
         poolInfo.end_time,
         poolInfo.reference_id
@@ -202,10 +205,12 @@ describe("talent-olympic-whitelist-gated-token-sale", () => {
       end_time: new anchor.BN(dayjs().add(1, "day").unix()),
       reference_id: new anchor.BN(1),
       mint: tokenKeypairForClose.publicKey,
+      price: new anchor.BN(TOKEN_PRICE),
     };
     let tx = await program.methods
       .initAPool(
         poolInfoForClose.allocation,
+        poolInfoForClose.price,
         poolInfoForClose.start_time,
         poolInfoForClose.end_time,
         poolInfoForClose.reference_id

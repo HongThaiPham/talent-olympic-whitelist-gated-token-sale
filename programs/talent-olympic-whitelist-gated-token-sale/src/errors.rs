@@ -8,4 +8,6 @@ pub enum MyError {
     #[msg("Cannot close pool")]
     CannotClosePool,
     Overflow,
+    InvalidTimeRange,
+    InvalidPrice,
 }
