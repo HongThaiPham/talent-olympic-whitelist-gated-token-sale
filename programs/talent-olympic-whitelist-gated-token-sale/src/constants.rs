@@ -16,3 +16,6 @@ pub const POOL_SEED: &[u8] = b"pool";
 
 #[constant]
 pub const SLOT_SEED: &[u8] = b"slot";
+
+#[constant]
+pub const TREASURY_SEED: &[u8] = b"treasury";

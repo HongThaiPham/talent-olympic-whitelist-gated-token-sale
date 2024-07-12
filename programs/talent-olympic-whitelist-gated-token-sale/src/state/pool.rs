@@ -1,4 +1,4 @@
-use anchor_lang::prelude::*;
+use anchor_lang::{prelude::*, solana_program::native_token::LAMPORTS_PER_SOL};
 
 use crate::errors::MyError;
 
@@ -85,5 +85,12 @@ impl Pool {
         require!(self.author == user, MyError::Unauthorized);
         self.can_buy = true;
         Ok(())
+    }
+
+    pub fn calculate_sol_amount(&self, amount: u64) -> Result<u64> {
+        let temp = amount.checked_mul(self.price).ok_or(MyError::Overflow)?;
+        Ok(temp
+            .checked_div(LAMPORTS_PER_SOL)
+            .ok_or(MyError::Overflow)?)
     }
 }

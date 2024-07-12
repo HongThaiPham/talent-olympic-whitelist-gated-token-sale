@@ -54,6 +54,15 @@ describe("talent-olympic-whitelist-gated-token-sale", () => {
     program.programId
   );
 
+  const [poolTreasuryAccount] = anchor.web3.PublicKey.findProgramAddressSync(
+    [
+      Buffer.from("treasury"),
+      poolAccount.toBuffer(),
+      poolAuthor.publicKey.toBuffer(),
+    ],
+    program.programId
+  );
+
   const [slotAccountUser1] = anchor.web3.PublicKey.findProgramAddressSync(
     [Buffer.from("slot"), poolAccount.toBuffer(), user1.publicKey.toBuffer()],
     program.programId
@@ -375,6 +384,7 @@ describe("talent-olympic-whitelist-gated-token-sale", () => {
         signer: user1.publicKey,
         mint: poolInfo.mint,
         pool: poolAccount,
+        poolTreasury: poolTreasuryAccount,
         slot: slotAccountUser1,
         signerTokenAccount: user1TokenAccount.address,
         poolTokenAccount: poolTokenAccount.address,
@@ -401,5 +411,37 @@ describe("talent-olympic-whitelist-gated-token-sale", () => {
     assert.equal(user1TokenAccountBalance.value.amount, amount.toString());
 
     console.log("Buy token tx:", tx);
+  });
+
+  it("Should user not in whitelist buy token fail", async () => {
+    const user2TokenAccount = await getOrCreateAssociatedTokenAccount(
+      provider.connection,
+      user2,
+      poolInfo.mint,
+      user2.publicKey
+    );
+    const amount = new anchor.BN(100 * 10 ** TOKEN_DECIMALS);
+    try {
+      await program.methods
+        .buyToken(amount)
+        .accountsPartial({
+          signer: user2.publicKey,
+          mint: poolInfo.mint,
+          pool: poolAccount,
+          poolTreasury: poolTreasuryAccount,
+          slot: slotAccountUser1,
+          signerTokenAccount: user2TokenAccount.address,
+          poolTokenAccount: poolTokenAccount.address,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+          systemProgram: anchor.web3.SystemProgram.programId,
+        })
+        .signers([user2])
+        .rpc();
+
+      assert.ok(false);
+    } catch (error) {
+      assert.isNotNull(error);
+    }
   });
 });

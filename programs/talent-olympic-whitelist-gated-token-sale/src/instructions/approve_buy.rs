@@ -4,7 +4,11 @@ use anchor_spl::{
     token_interface::{transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked},
 };
 
-use crate::{constants::POOL_SEED, errors::MyError, state::Pool};
+use crate::{
+    constants::{POOL_SEED, TREASURY_SEED},
+    errors::MyError,
+    state::Pool,
+};
 
 #[derive(Accounts)]
 pub struct ApproveBuy<'info> {
@@ -17,6 +21,13 @@ pub struct ApproveBuy<'info> {
       constraint = pool.author == signer.key() @MyError::Unauthorized,
     )]
     pub pool: Account<'info, Pool>,
+    /// CHECK: keeper
+    #[account(
+        mut,
+        seeds = [TREASURY_SEED, pool.key().as_ref(), pool.author.as_ref()],
+        bump,
+    )]
+    pub pool_treasury: AccountInfo<'info>,
     #[account(address = pool.mint)]
     pub mint: Box<InterfaceAccount<'info, Mint>>,
     #[account(

@@ -12,4 +12,5 @@ pub enum MyError {
     InvalidPrice,
     NotInWhitelist,
     ExceedsLimit,
+    InvalidAmount,
 }
