@@ -58,6 +58,7 @@ pub struct BuyToken<'info> {
 
 impl<'info> BuyToken<'info> {
     pub fn handler(&mut self, amount: u64, bumps: BuyTokenBumps) -> Result<()> {
+        require!(self.pool.can_buy, MyError::PoolCannotBuy);
         self.slot.buy_token(amount)?;
         // for simple case, we can just transfer the SOL from user to treasury immediately after the user buys the token
         self.transfer_sol_to_traesury(amount)?;
@@ -72,7 +73,7 @@ impl<'info> BuyToken<'info> {
 
     fn transfer_sol_to_traesury(&mut self, amount: u64) -> Result<()> {
         let lamports = self.pool.calculate_sol_amount(amount)?;
-        require!(lamports > 0, MyError::InvalidAmount);
+        require!(lamports.gt(&0), MyError::InvalidAmount);
         let accounts = Transfer {
             from: self.signer.to_account_info(),
             to: self.pool_treasury.clone(),

@@ -5,7 +5,6 @@ import dayjs from "dayjs";
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   createMint,
-  getAssociatedTokenAddressSync,
   getOrCreateAssociatedTokenAccount,
   mintTo,
   TOKEN_PROGRAM_ID,
@@ -42,7 +41,7 @@ describe("talent-olympic-whitelist-gated-token-sale", () => {
 
   const poolInfo = {
     allocation: new anchor.BN(1_000_000 * 10 ** TOKEN_DECIMALS),
-    start_time: new anchor.BN(dayjs().unix()),
+    start_time: new anchor.BN(dayjs().subtract(5, "s").unix()),
     end_time: new anchor.BN(dayjs().add(1, "day").unix()),
     reference_id: new anchor.BN(1),
     mint: tokenKeypair.publicKey,

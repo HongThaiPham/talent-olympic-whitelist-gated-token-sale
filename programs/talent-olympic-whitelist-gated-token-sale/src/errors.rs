@@ -13,4 +13,6 @@ pub enum MyError {
     NotInWhitelist,
     ExceedsLimit,
     InvalidAmount,
+    CannotBuyThisTime,
+    PoolCannotBuy,
 }

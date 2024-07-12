@@ -3,6 +3,7 @@ use anchor_spl::token_interface::Mint;
 
 use crate::{
     constants::{DISCRIMINATOR_SIZE, POOL_SEED, SLOT_SEED},
+    errors::MyError,
     state::{Pool, Slot},
 };
 
@@ -31,6 +32,12 @@ pub struct JoinWhitelist<'info> {
 
 impl<'info> JoinWhitelist<'info> {
     pub fn handler(&mut self) -> Result<()> {
+        require!(
+            self.pool.start_time.lt(&Clock::get()?.unix_timestamp)
+                && self.pool.end_time.gt(&Clock::get()?.unix_timestamp),
+            MyError::CannotBuyThisTime
+        );
+
         self.slot.init(self.pool.key())?;
         self.pool.increase_candidate_count()?;
         Ok(())
