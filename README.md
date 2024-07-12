@@ -39,6 +39,93 @@ This program enables users to create token sale pools with a whitelist controlle
 - The program is designed to be secure and efficient, leveraging Solana Anchor and the Solana blockchain.
 - The program is open-source, enabling the community to audit and contribute to the codebase.
 
+## Comparison of Whitelist Storage Methods in Solana Programs
+
+1. Array of Whitelisted Addresses
+
+- The whitelist is stored directly within the program's account as a fixed-size array of wallet addresses.
+- Advantages:
+
+  - Simplicity: Easy to implement and manage.
+
+  - Efficiency: Fast access and checking due to the fixed array size.
+
+- Disadvantages:
+
+  - Size Limitations: Restricted by the maximum size of a Solana account.
+
+  - Inflexibility: Difficult to add or remove addresses after program deployment.
+
+2. Vector
+
+- The whitelist is stored as a vector, a dynamic data structure that allows adding or removing elements
+
+- Advantages:
+
+  - Flexibility: Can dynamically add or remove addresses.
+
+  - Scalability: Can be expanded to accommodate a large number of addresses.
+
+- Disadvantages:
+
+  - Complexity: More complex to implement compared to an array.
+
+  - Efficiency: Slower access and checking compared to fixed-size arrays.
+
+  - Cost: Operations on Vectors (adding, removing, modifying) are more computationally expensive than arrays.
+
+3. Merkle Tree
+
+- The whitelist is stored as a Merkle tree, a data structure that enables efficient verification of membership.
+
+- Advantages:
+
+  - Efficiency: Fast verification of whitelist membership.
+
+  - Scalability: Can accommodate a large number of addresses.
+
+- Disadvantages:
+
+  - Complexity: Requires additional logic for Merkle tree construction and verification.
+
+  - Cost: Higher computational costs for Merkle tree operations.
+
+4. HashMap
+
+- The whitelist is stored as a HashMap, a data structure that maps keys to values.
+
+- Advantages:
+
+  - Flexibility: Can dynamically add or remove addresses.
+
+  - Efficiency: Fast access and checking due to the HashMap data structure.
+
+- Disadvantages:
+
+  - Complexity: Requires additional logic for HashMap management.
+
+  - Cost: Higher computational costs for HashMap operations.
+
+5. Account **(MY CHOICE)**
+
+- The whitelist is stored in a separate account on the Solana blockchain, with each address as a separate account data entry.
+
+- Advantages:
+
+  - Flexibility: Can dynamically add or remove addresses.
+
+  - Scalability: Can accommodate a large number of addresses (maybe unlimited).
+
+  - Efficiency: Fast access and checking due to Solana's account data structure.
+
+  - Security: Enhanced security and privacy for whitelist data.
+
+- Disadvantages:
+
+  - Complexity: Requires additional account management logic.
+
+  - Cost: Additional costs for creating and managing accounts but cost can be refunded after the program ends.
+
 ## How to use
 
 ### Install the required dependencies:
