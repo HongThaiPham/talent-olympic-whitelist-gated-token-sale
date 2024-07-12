@@ -21,7 +21,7 @@ export async function GET(req: Request) {
       actions: [
         {
           label: "Init Pool",
-          href: `${process.env.NEXT_PUBLIC_DOMAIN}/api/actions/init-pool?mint={mint}&allocation={allocation}&price={price}&period={period}`,
+          href: `${process.env.NEXT_PUBLIC_DOMAIN}/actions/init-pool?mint={mint}&allocation={allocation}&price={price}&period={period}`,
           parameters: [
             {
               name: "mint",
