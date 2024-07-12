@@ -1,12 +1,8 @@
 import { web3 } from "@coral-xyz/anchor";
-const PROGRAM_ID = new web3.PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID!);
 
 import { ActionGetResponse } from "@solana/actions";
 
-type Params = {
-  pool: string;
-};
-export async function GET(req: Request, context: { params: Params }) {
+export async function GET(req: Request) {
   const response: ActionGetResponse = {
     title: "Init a new pool",
     label: "Init Pool",
