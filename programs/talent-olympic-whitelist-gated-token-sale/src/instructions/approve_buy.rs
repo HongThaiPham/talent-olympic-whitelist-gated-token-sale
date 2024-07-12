@@ -1,5 +1,8 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token_interface::Mint;
+use anchor_spl::{
+    associated_token::AssociatedToken,
+    token_interface::{transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked},
+};
 
 use crate::{constants::POOL_SEED, errors::MyError, state::Pool};
 
@@ -16,11 +19,42 @@ pub struct ApproveBuy<'info> {
     pub pool: Account<'info, Pool>,
     #[account(address = pool.mint)]
     pub mint: Box<InterfaceAccount<'info, Mint>>,
+    #[account(
+        mut,
+        associated_token::mint = mint,
+        associated_token::authority = signer
+    )]
+    pub signer_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
+    #[account(
+        mut,
+        associated_token::mint = mint,
+        associated_token::authority = pool,
+        associated_token::token_program = token_program,
+    )]
+    pub pool_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
+    pub associated_token_program: Program<'info, AssociatedToken>,
+    pub token_program: Interface<'info, TokenInterface>,
+    pub system_program: Program<'info, System>,
 }
 
 impl<'info> ApproveBuy<'info> {
     pub fn handler(&mut self) -> Result<()> {
         self.pool.approve_buy(self.signer.key())?;
+        self.transfer_token_to_pool()?;
+        Ok(())
+    }
+
+    fn transfer_token_to_pool(&mut self) -> Result<()> {
+        let accounts = TransferChecked {
+            from: self.signer_token_account.to_account_info(),
+            mint: self.mint.to_account_info(),
+            to: self.pool_token_account.to_account_info(),
+            authority: self.signer.to_account_info(),
+        };
+        let ctx = CpiContext::new(self.token_program.to_account_info(), accounts);
+
+        transfer_checked(ctx, self.pool.allocation, self.mint.decimals)?;
+
         Ok(())
     }
 }

@@ -49,6 +49,10 @@ pub mod talent_olympic_whitelist_gated_token_sale {
     pub fn leave_whitelist(ctx: Context<LeaveWhitelist>) -> Result<()> {
         ctx.accounts.handler()
     }
+
+    pub fn buy_token(ctx: Context<BuyToken>, amount: u64) -> Result<()> {
+        ctx.accounts.handler(amount, ctx.bumps)
+    }
 }
 
 #[derive(Accounts)]

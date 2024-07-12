@@ -32,7 +32,7 @@ pub struct JoinWhitelist<'info> {
 impl<'info> JoinWhitelist<'info> {
     pub fn handler(&mut self) -> Result<()> {
         self.slot.init(self.pool.key())?;
-        self.pool.has_join_whitelist()?;
+        self.pool.increase_candidate_count()?;
         Ok(())
     }
 }

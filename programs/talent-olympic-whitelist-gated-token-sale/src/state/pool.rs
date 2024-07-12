@@ -65,10 +65,18 @@ impl Pool {
         Ok(())
     }
 
-    pub fn has_join_whitelist(&mut self) -> Result<()> {
+    pub fn increase_candidate_count(&mut self) -> Result<()> {
         self.candidate_count = self
             .candidate_count
             .checked_add(1)
+            .ok_or(MyError::Overflow)?;
+        Ok(())
+    }
+
+    pub fn decrease_candidate_count(&mut self) -> Result<()> {
+        self.candidate_count = self
+            .candidate_count
+            .checked_sub(1)
             .ok_or(MyError::Overflow)?;
         Ok(())
     }

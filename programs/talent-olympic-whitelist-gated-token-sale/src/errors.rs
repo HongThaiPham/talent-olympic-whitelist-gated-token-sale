@@ -10,4 +10,6 @@ pub enum MyError {
     Overflow,
     InvalidTimeRange,
     InvalidPrice,
+    NotInWhitelist,
+    ExceedsLimit,
 }

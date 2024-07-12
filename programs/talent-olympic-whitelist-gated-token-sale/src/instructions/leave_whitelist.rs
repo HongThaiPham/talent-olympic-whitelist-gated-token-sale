@@ -3,7 +3,6 @@ use anchor_spl::token_interface::Mint;
 
 use crate::{
     constants::{POOL_SEED, SLOT_SEED},
-    errors::MyError,
     state::{Pool, Slot},
 };
 
@@ -30,11 +29,7 @@ pub struct LeaveWhitelist<'info> {
 
 impl<'info> LeaveWhitelist<'info> {
     pub fn handler(&mut self) -> Result<()> {
-        self.pool.candidate_count = self
-            .pool
-            .candidate_count
-            .checked_sub(1)
-            .ok_or(MyError::Overflow)?;
+        self.pool.decrease_candidate_count()?;
         Ok(())
     }
 }

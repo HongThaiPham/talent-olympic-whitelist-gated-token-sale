@@ -3,9 +3,12 @@ import { Program } from "@coral-xyz/anchor";
 import { TalentOlympicWhitelistGatedTokenSale } from "../target/types/talent_olympic_whitelist_gated_token_sale";
 import dayjs from "dayjs";
 import {
+  ASSOCIATED_TOKEN_PROGRAM_ID,
   createMint,
+  getAssociatedTokenAddressSync,
   getOrCreateAssociatedTokenAccount,
   mintTo,
+  TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
 import { assert } from "chai";
 
@@ -56,6 +59,9 @@ describe("talent-olympic-whitelist-gated-token-sale", () => {
     program.programId
   );
 
+  let poolAuthorTokenAccount;
+  let poolTokenAccount;
+
   before(async () => {
     {
       const tx = await provider.connection.requestAirdrop(
@@ -87,18 +93,26 @@ describe("talent-olympic-whitelist-gated-token-sale", () => {
         tokenKeypair
       );
 
+      poolAuthorTokenAccount = await getOrCreateAssociatedTokenAccount(
+        provider.connection,
+        poolAuthor,
+        mint,
+        poolAuthor.publicKey
+      );
+
+      poolTokenAccount = await getOrCreateAssociatedTokenAccount(
+        provider.connection,
+        poolAuthor,
+        mint,
+        poolAccount,
+        true
+      );
+
       await mintTo(
         provider.connection,
         poolAuthor,
         mint,
-        (
-          await getOrCreateAssociatedTokenAccount(
-            provider.connection,
-            poolAuthor,
-            mint,
-            poolAuthor.publicKey
-          )
-        ).address,
+        poolAuthorTokenAccount.address,
         poolAuthor,
         BigInt(TOKEN_INIT_AMOUNT)
       );
@@ -300,13 +314,31 @@ describe("talent-olympic-whitelist-gated-token-sale", () => {
   it("Should pool author allow approve pool can buy successfully", async () => {
     const tx = await program.methods
       .approveBuy()
-      .accounts({ signer: poolAuthor.publicKey, mint: poolInfo.mint })
+      .accountsPartial({
+        signer: poolAuthor.publicKey,
+        pool: poolAccount,
+        mint: poolInfo.mint,
+        signerTokenAccount: poolAuthorTokenAccount.address,
+        poolTokenAccount: poolTokenAccount.address,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
       .signers([poolAuthor])
       .rpc();
 
     assert.ok(true);
     const poolAccountData = await program.account.pool.fetch(poolAccount);
     assert.equal(poolAccountData.canBuy, true);
+
+    const poolTokenAccountBalance =
+      await program.provider.connection.getTokenAccountBalance(
+        poolTokenAccount.address
+      );
+    assert.equal(
+      poolTokenAccountBalance.value.amount,
+      poolInfo.allocation.toString()
+    );
     console.log("Approve buy tx:", tx);
   });
 
@@ -327,5 +359,47 @@ describe("talent-olympic-whitelist-gated-token-sale", () => {
     assert.equal(slotAccountData.inWhitelist, true);
     assert.equal(slotAccountData.limitAmount.toNumber(), LIMIT_AMOUNT);
     console.log("Approve user in whitelist tx:", tx);
+  });
+
+  it("Should user in whitelist buy token successfully", async () => {
+    const user1TokenAccount = await getOrCreateAssociatedTokenAccount(
+      provider.connection,
+      user1,
+      poolInfo.mint,
+      user1.publicKey
+    );
+    const amount = new anchor.BN(100 * 10 ** TOKEN_DECIMALS);
+    const tx = await program.methods
+      .buyToken(amount)
+      .accountsPartial({
+        signer: user1.publicKey,
+        mint: poolInfo.mint,
+        pool: poolAccount,
+        slot: slotAccountUser1,
+        signerTokenAccount: user1TokenAccount.address,
+        poolTokenAccount: poolTokenAccount.address,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .signers([user1])
+      .rpc();
+
+    assert.ok(true);
+    const poolTokenAccountBalance =
+      await program.provider.connection.getTokenAccountBalance(
+        poolTokenAccount.address
+      );
+    assert.equal(
+      poolTokenAccountBalance.value.amount,
+      poolInfo.allocation.sub(amount).toString()
+    );
+    const user1TokenAccountBalance =
+      await program.provider.connection.getTokenAccountBalance(
+        user1TokenAccount.address
+      );
+    assert.equal(user1TokenAccountBalance.value.amount, amount.toString());
+
+    console.log("Buy token tx:", tx);
   });
 });

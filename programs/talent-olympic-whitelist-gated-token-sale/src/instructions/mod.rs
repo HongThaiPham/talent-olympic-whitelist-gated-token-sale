@@ -15,3 +15,6 @@ pub use approve_buy::*;
 
 pub mod set_slot;
 pub use set_slot::*;
+
+pub mod buy_token;
+pub use buy_token::*;

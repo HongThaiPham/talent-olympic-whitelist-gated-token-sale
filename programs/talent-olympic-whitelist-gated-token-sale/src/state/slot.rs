@@ -8,6 +8,7 @@ pub struct Slot {
     pub pool: Pubkey,       // Pool account
     pub in_whitelist: bool, // Whether the user is in the whitelist or not, default is false and can be set to true by the pool owner
     pub limit_amount: u64,  // Amount of tokens the user can buy
+    pub bought_amount: u64, // Amount of tokens the user has bought
 }
 
 #[event]
@@ -23,6 +24,7 @@ impl Slot {
         self.pool = pool;
         self.in_whitelist = false;
         self.limit_amount = 0;
+        self.bought_amount = 0;
         Ok(())
     }
 
@@ -31,6 +33,20 @@ impl Slot {
 
         self.in_whitelist = in_whitelist;
         self.limit_amount = limit_amount;
+        Ok(())
+    }
+
+    pub fn buy_token(&mut self, amount: u64) -> Result<()> {
+        require!(self.in_whitelist, MyError::NotInWhitelist);
+        require!(
+            self.bought_amount + amount <= self.limit_amount,
+            MyError::ExceedsLimit
+        );
+
+        self.bought_amount = self
+            .bought_amount
+            .checked_add(amount)
+            .ok_or(MyError::Overflow)?;
         Ok(())
     }
 }
