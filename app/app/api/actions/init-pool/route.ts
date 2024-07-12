@@ -1,6 +1,11 @@
 import { web3 } from "@coral-xyz/anchor";
 
 import { ActionGetResponse } from "@solana/actions";
+const headers: {
+  "Access-Control-Allow-Origin": "*";
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS";
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, Content-Encoding, Accept-Encoding";
+};
 
 export async function GET(req: Request) {
   const response: ActionGetResponse = {
@@ -30,15 +35,18 @@ export async function GET(req: Request) {
 
   return Response.json(response, {
     status: 200,
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    },
+    headers,
   });
 }
 
 export async function POST(req: Request) {
-  return Response.json({ message: "POST request" });
+  return Response.json(
+    { message: "POST request" },
+    {
+      status: 200,
+      headers,
+    }
+  );
 }
 
 export async function OPTIONS(req: Request) {
@@ -46,10 +54,7 @@ export async function OPTIONS(req: Request) {
     { message: "OPTIONS request" },
     {
       status: 200,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-      },
+      headers,
     }
   );
 }
