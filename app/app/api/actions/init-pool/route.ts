@@ -1,10 +1,11 @@
 import { web3 } from "@coral-xyz/anchor";
 
 import { ActionGetResponse } from "@solana/actions";
-const headers: {
-  "Access-Control-Allow-Origin": "*";
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS";
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, Content-Encoding, Accept-Encoding";
+const headers = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers":
+    "Content-Type, Authorization, Content-Encoding, Accept-Encoding",
 };
 
 export async function GET(req: Request) {
