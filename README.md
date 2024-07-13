@@ -174,3 +174,13 @@ Test case:
 ```bash
 anchor deploy
 ```
+
+### User flow
+
+- Pool author call init_a_pool to create a whitelist-gated token sale pool
+- After pool created, user can apply to join the whitelist in the defined registration period by call join_whitelist
+- Pool author can approve or reject the whitelist application by call set_slot
+- At the end of the registration period, pool author will call approve_buy to make user can buy token from the pool
+- If the whitelist application is approved, user can purchase tokens directly from the pool by call buy_token
+- If the whitelist application is rejected, user can not purchase tokens from the pool
+- Pool author can withdraw SOL from the pool treasury
