@@ -33,7 +33,8 @@ pub struct ApproveBuy<'info> {
     #[account(
         mut,
         associated_token::mint = mint,
-        associated_token::authority = signer
+        associated_token::authority = signer,
+        associated_token::token_program = token_program,
     )]
     pub signer_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
     #[account(
