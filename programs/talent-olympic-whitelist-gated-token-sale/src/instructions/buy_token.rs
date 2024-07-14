@@ -36,7 +36,10 @@ pub struct BuyToken<'info> {
       bump
     )]
     pub slot: Account<'info, Slot>,
-    #[account(address = pool.mint)]
+    #[account(
+        address = pool.mint,
+        mint::token_program = token_program,
+    )]
     pub mint: Box<InterfaceAccount<'info, Mint>>,
     #[account(
       mut,

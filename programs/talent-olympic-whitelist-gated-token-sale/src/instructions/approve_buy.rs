@@ -28,7 +28,10 @@ pub struct ApproveBuy<'info> {
         bump,
     )]
     pub pool_treasury: AccountInfo<'info>,
-    #[account(address = pool.mint)]
+    #[account(
+        address = pool.mint,
+        mint::token_program = token_program,
+    )]
     pub mint: Box<InterfaceAccount<'info, Mint>>,
     #[account(
         mut,
